@@ -1,16 +1,34 @@
 const mongoose = require('mongoose');
 const Task = require('../modelos/db');
+const request = require('request');
+let url = 'http://localhost:5000'
+		console.log("url --", url)
 
-exports.list = (req, res) => {
-  Task.find({}, (err, task)=> {
-    if (err){
-      res.send(err);
+exports.list = (req,res)=>{
+request.get(url , (err, response, body) => {
+  if (!err) {
+    console.log(response.statusCode);
+    if (response.statusCode == 200) {
+      console.log('Entro');
+      Task.find({}, (err, task)=> {
+            if (err){
+              res.send(err);
+            }
+            else{
+            res.json(task);
+            }
+          });
+
+    } else {
+      res.status(response.statusCode).send(JSON.parse(body))
     }
-    else{
-    res.json(task);
-    }
-  });
-};
+  } else {
+    res.status(500).send({
+        status: 500, name: 'internalError', message: 'Ocurrio un error interno'
+      })
+  }
+})
+}
 
 exports.crt = (req, res) => {
     var new_task = new Task(req.body);
